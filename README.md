@@ -4,7 +4,7 @@
 <img src="https://raw.githubusercontent.com/QuentinFuxa/WhisperLiveKit/refs/heads/main/demo.png" alt="WhisperLiveKit Demo" width="730">
 </p>
 
-<p align="center"><b>Real-time, Fully Local Speech-to-Text with Speaker Identification</b></p>
+<p align="center"><b>話者識別機能付き、リアルタイム、完全ローカルな音声テキスト変換</b></p>
 
 <p align="center">
 <a href="https://pypi.org/project/whisperlivekit/"><img alt="PyPI Version" src="https://img.shields.io/pypi/v/whisperlivekit?color=g"></a>
@@ -13,84 +13,76 @@
 <a href="https://github.com/QuentinFuxa/WhisperLiveKit/blob/main/LICENSE"><img alt="License" src="https://img.shields.io/badge/License-MIT/Dual Licensed-dark_green"></a>
 </p>
 
+すぐに使えるバックエンド+サーバーとシンプルなフロントエンドで、リアルタイムの音声文字起こしをブラウザに直接提供します。✨
 
-Real-time speech transcription directly to your browser, with a ready-to-use backend+server and a simple frontend. ✨
+#### 主要な研究による技術：
 
-#### Powered by Leading Research:
+- [SimulStreaming](https://github.com/ufal/SimulStreaming) (SOTA 2025) - AlignAttポリシーによる超低遅延文字起こし
+- [WhisperStreaming](https://github.com/ufal/whisper_streaming) (SOTA 2023) - LocalAgreementポリシーによる低遅延文字起こし
+- [Streaming Sortformer](https://arxiv.org/abs/2507.18446) (SOTA 2025) - 高度なリアルタイム話者ダイアライゼーション
+- [Diart](https://github.com/juanmc2005/diart) (SOTA 2021) - リアルタイム話者ダイアライゼーション
+- [Silero VAD](https://github.com/snakers4/silero-vad) (2024) - エンタープライズグレードの音声区間検出
 
-- [SimulStreaming](https://github.com/ufal/SimulStreaming) (SOTA 2025) - Ultra-low latency transcription with AlignAtt policy
-- [WhisperStreaming](https://github.com/ufal/whisper_streaming) (SOTA 2023) - Low latency transcription with LocalAgreement policy
-- [Streaming Sortformer](https://arxiv.org/abs/2507.18446) (SOTA 2025) - Advanced real-time speaker diarization
-- [Diart](https://github.com/juanmc2005/diart) (SOTA 2021) - Real-time speaker diarization
-- [Silero VAD](https://github.com/snakers4/silero-vad) (2024) - Enterprise-grade Voice Activity Detection
+> **なぜ各音声バッチで単純なWhisperモデルを実行しないのか？** Whisperは完全な発話向けに設計されており、リアルタイムのチャンク向けではありません。小さなセグメントを処理するとコンテキストが失われ、単語が音節の途中で途切れ、質の悪い文字起こしになります。WhisperLiveKitは、インテリジェントなバッファリングとインクリメンタルな処理のために、最先端の同時音声研究を利用しています。
 
-
-> **Why not just run a simple Whisper model on every audio batch?** Whisper is designed for complete utterances, not real-time chunks. Processing small segments loses context, cuts off words mid-syllable, and produces poor transcription. WhisperLiveKit uses state-of-the-art simultaneous speech research for intelligent buffering and incremental processing.
-
-
-### Architecture
+### アーキテクチャ
 
 <img alt="Architecture" src="https://raw.githubusercontent.com/QuentinFuxa/WhisperLiveKit/refs/heads/main/architecture.png" />
 
-*The backend supports multiple concurrent users. Voice Activity Detection reduces overhead when no voice is detected.*
+*バックエンドは複数の同時ユーザーをサポートします。音声が検出されない場合、音声区間検出がオーバーヘッドを削減します。*
 
-### Installation & Quick Start
+### インストールとクイックスタート
 
 ```bash
 pip install whisperlivekit
 ```
 
->  **FFmpeg is required** and must be installed before using WhisperLiveKit
-> 
-> | OS | How to install |
+>  **FFmpegが必要です** WhisperLiveKitを使用する前にインストールする必要があります。
+>
+> | OS | インストール方法 |
 > |-----------|-------------|
 >  | Ubuntu/Debian | `sudo apt install ffmpeg` |
 > | MacOS | `brew install ffmpeg` |
-> | Windows | Download .exe from https://ffmpeg.org/download.html and add to PATH |
+> | Windows | https://ffmpeg.org/download.html から.exeをダウンロードし、PATHに追加 |
 
-#### Quick Start
-1. **Start the transcription server:**
+#### クイックスタート
+1. **文字起こしサーバーを起動します:**
    ```bash
    whisperlivekit-server --model base --language en
    ```
 
-2. **Open your browser** and navigate to `http://localhost:8000`. Start speaking and watch your words appear in real-time!
+2. **ブラウザを開き** `http://localhost:8000` にアクセスします。話し始めると、あなたの言葉がリアルタイムで表示されます！
 
 
-> - See [tokenizer.py](https://github.com/QuentinFuxa/WhisperLiveKit/blob/main/whisperlivekit/simul_whisper/whisper/tokenizer.py) for the list of all available languages.
-> - For HTTPS requirements, see the **Parameters** section for SSL configuration options.
+> - 利用可能なすべての言語のリストについては、[tokenizer.py](https://github.com/QuentinFuxa/WhisperLiveKit/blob/main/whisperlivekit/simul_whisper/whisper/tokenizer.py) を参照してください。
+> - HTTPSの要件については、**パラメータ**セクションのSSL設定オプションを参照してください。
 
- 
+#### オプションの依存関係
 
-#### Optional Dependencies
-
-| Optional | `pip install` |
+| オプション | `pip install` |
 |-----------|-------------|
-| **Speaker diarization with Sortformer** | `git+https://github.com/NVIDIA/NeMo.git@main#egg=nemo_toolkit[asr]` |
-| Speaker diarization with Diart | `diart` |
-| Original Whisper backend | `whisper` |
-| Improved timestamps backend | `whisper-timestamped` |
-| Apple Silicon optimization backend | `mlx-whisper` |
-| OpenAI API backend | `openai` |
+| **Sortformerによる話者ダイアライゼーション** | `git+https://github.com/NVIDIA/NeMo.git@main#egg=nemo_toolkit[asr]` |
+| Diartによる話者ダイアライゼーション | `diart` |
+| オリジナルのWhisperバックエンド | `whisper` |
+| タイムスタンプ改善バックエンド | `whisper-timestamped` |
+| Apple Silicon最適化バックエンド | `mlx-whisper` |
+| OpenAI APIバックエンド | `openai` |
 
-See  **Parameters & Configuration** below on how to use them.
+それらの使用方法については、以下の**パラメータと設定**を参照してください。
 
+### 使用例
 
-
-### Usage Examples
-
-**Command-line Interface**: Start the transcription server with various options:
+**コマンドラインインターフェース**: 様々なオプションで文字起こしサーバーを起動します:
 
 ```bash
-# Use better model than default (small)
+# デフォルト(small)より良いモデルを使用
 whisperlivekit-server --model large-v3
 
-# Advanced configuration with diarization and language
+# ダイアライゼーションと言語を指定した高度な設定
 whisperlivekit-server --host 0.0.0.0 --port 8000 --model medium --diarization --language fr
 ```
 
-
-**Python API Integration**: Check [basic_server](https://github.com/QuentinFuxa/WhisperLiveKit/blob/main/whisperlivekit/basic_server.py) for a more complete example of how to use the functions and classes.
+**Python API連携**: 関数やクラスの使用方法のより完全な例については、[basic_server](https://github.com/QuentinFuxa/WhisperLiveKit/blob/main/whisperlivekit/basic_server.py) を確認してください。
 
 ```python
 from whisperlivekit import TranscriptionEngine, AudioProcessor, parse_args
@@ -118,96 +110,96 @@ async def handle_websocket_results(websocket: WebSocket, results_generator):
 async def websocket_endpoint(websocket: WebSocket):
     global transcription_engine
 
-    # Create a new AudioProcessor for each connection, passing the shared engine
-    audio_processor = AudioProcessor(transcription_engine=transcription_engine)    
+    # 接続ごとに新しいAudioProcessorを作成し、共有エンジンを渡す
+    audio_processor = AudioProcessor(transcription_engine=transcription_engine)
     results_generator = await audio_processor.create_tasks()
     results_task = asyncio.create_task(handle_websocket_results(websocket, results_generator))
     await websocket.accept()
     while True:
         message = await websocket.receive_bytes()
-        await audio_processor.process_audio(message)        
+        await audio_processor.process_audio(message)
 ```
 
-**Frontend Implementation**: The package includes an HTML/JavaScript implementation [here](https://github.com/QuentinFuxa/WhisperLiveKit/blob/main/whisperlivekit/web/live_transcription.html). You can also import it using `from whisperlivekit import get_web_interface_html` & `page = get_web_interface_html()`
+**フロントエンド実装**: パッケージにはHTML/JavaScript実装が[ここ](https://github.com/QuentinFuxa/WhisperLiveKit/blob/main/whisperlivekit/web/live_transcription.html)に含まれています。`from whisperlivekit import get_web_interface_html` & `page = get_web_interface_html()` を使ってインポートすることもできます。
 
 
-## Parameters & Configuration
+## パラメータと設定
 
-An important list of parameters can be changed. But what *should* you change?
-- the `--model` size. List and recommandations [here](https://github.com/QuentinFuxa/WhisperLiveKit/blob/main/available_models.md)
-- the `--language`.  List [here](https://github.com/QuentinFuxa/WhisperLiveKit/blob/main/whisperlivekit/simul_whisper/whisper/tokenizer.py). If you use `auto`, the model attempts to detect the language automatically, but it tends to bias towards English.
-- the `--backend` ? you can switch to `--backend faster-whisper` if  `simulstreaming` does not work correctly or if you prefer to avoid the dual-license requirements.
-- `--warmup-file`, if you have one
-- `--host`, `--port`, `--ssl-certfile`, `--ssl-keyfile`, if you set up a server
-- `--diarization`, if you want to use it.
+重要なパラメータのリストを変更できます。しかし、何を*変更すべき*でしょうか？
+- `--model` サイズ。リストと推奨事項は[こちら](https://github.com/QuentinFuxa/WhisperLiveKit/blob/main/available_models.md)
+- `--language`。リストは[こちら](https://github.com/QuentinFuxa/WhisperLiveKit/blob/main/whisperlivekit/simul_whisper/whisper/tokenizer.py)。`auto`を使用すると、モデルは自動的に言語を検出しようとしますが、英語に偏る傾向があります。
+- `--backend`？ `simulstreaming`が正しく動作しない場合や、デュアルライセンス要件を避けたい場合は`--backend faster-whisper`に切り替えることができます。
+- `--warmup-file`、もしあれば
+- `--host`, `--port`, `--ssl-certfile`, `--ssl-keyfile`、サーバーをセットアップする場合
+- `--diarization`、使用したい場合。
 
-The rest I don't recommend. But below are your options.
+残りは推奨しません。しかし、以下があなたのオプションです。
 
-| Parameter | Description | Default |
+| パラメータ | 説明 | デフォルト |
 |-----------|-------------|---------|
-| `--model` | Whisper model size. | `small` |
-| `--language` | Source language code or `auto` | `auto` |
-| `--task` | `transcribe` or `translate` | `transcribe` |
-| `--backend` | Processing backend | `simulstreaming` |
-| `--min-chunk-size` | Minimum audio chunk size (seconds) | `1.0` |
-| `--no-vac` | Disable Voice Activity Controller | `False` |
-| `--no-vad` | Disable Voice Activity Detection | `False` |
-| `--warmup-file` | Audio file path for model warmup | `jfk.wav` |
-| `--host` | Server host address | `localhost` |
-| `--port` | Server port | `8000` |
-| `--ssl-certfile` | Path to the SSL certificate file (for HTTPS support) | `None` |
-| `--ssl-keyfile` | Path to the SSL private key file (for HTTPS support) | `None` |
+| `--model` | Whisperモデルのサイズ。 | `small` |
+| `--language` | ソース言語コードまたは`auto` | `auto` |
+| `--task` | `transcribe`または`translate` | `transcribe` |
+| `--backend` | 処理バックエンド | `simulstreaming` |
+| `--min-chunk-size` | 最小音声チャンクサイズ（秒） | `1.0` |
+| `--no-vac` | 音声アクティビティコントローラーを無効化 | `False` |
+| `--no-vad` | 音声区間検出を無効化 | `False` |
+| `--warmup-file` | モデルのウォームアップ用音声ファイルパス | `jfk.wav` |
+| `--host` | サーバーホストアドレス | `localhost` |
+| `--port` | サーバーポート | `8000` |
+| `--ssl-certfile` | SSL証明書ファイルへのパス（HTTPSサポート用） | `None` |
+| `--ssl-keyfile` | SSL秘密鍵ファイルへのパス（HTTPSサポート用） | `None` |
 
 
-| WhisperStreaming backend options | Description | Default |
+| WhisperStreamingバックエンドオプション | 説明 | デフォルト |
 |-----------|-------------|---------|
-| `--confidence-validation` | Use confidence scores for faster validation | `False` |
-| `--buffer_trimming` | Buffer trimming strategy (`sentence` or `segment`) | `segment` |
+| `--confidence-validation` | 高速な検証のために信頼スコアを使用 | `False` |
+| `--buffer_trimming` | バッファトリミング戦略（`sentence`または`segment`） | `segment` |
 
 
-| SimulStreaming backend options | Description | Default |
+| SimulStreamingバックエンドオプション | 説明 | デフォルト |
 |-----------|-------------|---------|
-| `--frame-threshold` | AlignAtt frame threshold (lower = faster, higher = more accurate) | `25` |
-| `--beams` | Number of beams for beam search (1 = greedy decoding) | `1` |
-| `--decoder` | Force decoder type (`beam` or `greedy`) | `auto` |
-| `--audio-max-len` | Maximum audio buffer length (seconds) | `30.0` |
-| `--audio-min-len` | Minimum audio length to process (seconds) | `0.0` |
-| `--cif-ckpt-path` | Path to CIF model for word boundary detection | `None` |
-| `--never-fire` | Never truncate incomplete words | `False` |
-| `--init-prompt` | Initial prompt for the model | `None` |
-| `--static-init-prompt` | Static prompt that doesn't scroll | `None` |
-| `--max-context-tokens` | Maximum context tokens | `None` |
-| `--model-path` | Direct path to .pt model file. Download it if not found | `./base.pt` |
-| `--preloaded-model-count` | Optional. Number of models to preload in memory to speed up loading (set up to the expected number of concurrent users) | `1` |
+| `--frame-threshold` | AlignAttフレームしきい値（低いほど速く、高いほど正確） | `25` |
+| `--beams` | ビームサーチのビーム数（1 = 貪欲デコーディング） | `1` |
+| `--decoder` | デコーダタイプを強制（`beam`または`greedy`） | `auto` |
+| `--audio-max-len` | 最大音声バッファ長（秒） | `30.0` |
+| `--audio-min-len` | 処理する最小音声長（秒） | `0.0` |
+| `--cif-ckpt-path` | 単語境界検出用CIFモデルへのパス | `None` |
+| `--never-fire` | 未完了の単語を決して切り捨てない | `False` |
+| `--init-prompt` | モデルの初期プロンプト | `None` |
+| `--static-init-prompt` | スクロールしない静的プロンプト | `None` |
+| `--max-context-tokens` | 最大コンテキストトークン数 | `None` |
+| `--model-path` | .ptモデルファイルへの直接パス。見つからない場合はダウンロード | `./base.pt` |
+| `--preloaded-model-count` | オプション。メモリにプリロードするモデルの数（予想される同時ユーザー数まで設定） | `1` |
 
-| Diarization options | Description | Default |
+| ダイアライゼーションオプション | 説明 | デフォルト |
 |-----------|-------------|---------|
-| `--diarization` | Enable speaker identification | `False` |
-| `--diarization-backend` |  `diart` or `sortformer` | `sortformer` |
-| `--segmentation-model` | Hugging Face model ID for Diart segmentation model. [Available models](https://github.com/juanmc2005/diart/tree/main?tab=readme-ov-file#pre-trained-models) | `pyannote/segmentation-3.0` |
-| `--embedding-model` | Hugging Face model ID for Diart embedding model. [Available models](https://github.com/juanmc2005/diart/tree/main?tab=readme-ov-file#pre-trained-models) | `speechbrain/spkrec-ecapa-voxceleb` |
+| `--diarization` | 話者識別を有効化 | `False` |
+| `--diarization-backend` | `diart`または`sortformer` | `sortformer` |
+| `--segmentation-model` | DiartセグメンテーションモデルのHugging FaceモデルID。[利用可能なモデル](https://github.com/juanmc2005/diart/tree/main?tab=readme-ov-file#pre-trained-models) | `pyannote/segmentation-3.0` |
+| `--embedding-model` | Diart埋め込みモデルのHugging FaceモデルID。[利用可能なモデル](https://github.com/juanmc2005/diart/tree/main?tab=readme-ov-file#pre-trained-models) | `speechbrain/spkrec-ecapa-voxceleb` |
 
 
-> For diarization using Diart, you need access to pyannote.audio models:
-> 1. [Accept user conditions](https://huggingface.co/pyannote/segmentation) for the `pyannote/segmentation` model
-> 2. [Accept user conditions](https://huggingface.co/pyannote/segmentation-3.0) for the `pyannote/segmentation-3.0` model
-> 3. [Accept user conditions](https://huggingface.co/pyannote/embedding) for the `pyannote/embedding` model
->4. Login with HuggingFace: `huggingface-cli login`
+> Diartを使用したダイアライゼーションには、pyannote.audioモデルへのアクセスが必要です：
+> 1. `pyannote/segmentation`モデルの[ユーザー条件に同意](https://huggingface.co/pyannote/segmentation)
+> 2. `pyannote/segmentation-3.0`モデルの[ユーザー条件に同意](https://huggingface.co/pyannote/segmentation-3.0)
+> 3. `pyannote/embedding`モデルの[ユーザー条件に同意](https://huggingface.co/pyannote/embedding)
+>4. HuggingFaceでログイン: `huggingface-cli login`
 
-### 🚀 Deployment Guide
+### 🚀 デプロイガイド
 
-To deploy WhisperLiveKit in production:
- 
-1. **Server Setup**: Install production ASGI server & launch with multiple workers
+WhisperLiveKitを本番環境にデプロイするには：
+
+1. **サーバーセットアップ**: 本番用ASGIサーバーをインストールし、複数のワーカーで起動します
    ```bash
    pip install uvicorn gunicorn
    gunicorn -k uvicorn.workers.UvicornWorker -w 4 your_app:app
    ```
 
-2. **Frontend**: Host your customized version of the `html` example & ensure WebSocket connection points correctly
+2. **フロントエンド**: カスタマイズした`html`のバージョンをホストし、WebSocket接続が正しくポイントするようにします
 
-3. **Nginx Configuration** (recommended for production):
-    ```nginx    
+3. **Nginx設定** (本番環境で推奨):
+    ```nginx
    server {
        listen 80;
        server_name your-domain.com;
@@ -219,48 +211,48 @@ To deploy WhisperLiveKit in production:
     }}
     ```
 
-4. **HTTPS Support**: For secure deployments, use "wss://" instead of "ws://" in WebSocket URL
+4. **HTTPSサポート**: 安全なデプロイメントのために、WebSocket URLで "ws://" の代わりに "wss://" を使用します
 
 ## 🐋 Docker
 
-Deploy the application easily using Docker with GPU or CPU support.
+GPUまたはCPUサポート付きでDockerを使用してアプリケーションを簡単にデプロイします。
 
-### Prerequisites
-- Docker installed on your system
-- For GPU support: NVIDIA Docker runtime installed
+### 前提条件
+- Dockerがシステムにインストールされていること
+- GPUサポートの場合: NVIDIA Dockerランタイムがインストールされていること
 
-### Quick Start
+### クイックスタート
 
-**With GPU acceleration (recommended):**
+**GPUアクセラレーション付き (推奨):**
 ```bash
 docker build -t wlk .
 docker run --gpus all -p 8000:8000 --name wlk wlk
 ```
 
-**CPU only:**
+**CPUのみ:**
 ```bash
 docker build -f Dockerfile.cpu -t wlk .
 docker run -p 8000:8000 --name wlk wlk
 ```
 
-### Advanced Usage
+### 高度な使用法
 
-**Custom configuration:**
+**カスタム設定:**
 ```bash
-# Example with custom model and language
+# カスタムモデルと言語の例
 docker run --gpus all -p 8000:8000 --name wlk wlk --model large-v3 --language fr
 ```
 
-### Memory Requirements
-- **Large models**: Ensure your Docker runtime has sufficient memory allocated
+### メモリ要件
+- **大規模モデル**: Dockerランタイムに十分なメモリが割り当てられていることを確認してください
 
 
-#### Customization
+#### カスタマイズ
 
-- `--build-arg` Options:
-  - `EXTRAS="whisper-timestamped"` - Add extras to the image's installation (no spaces). Remember to set necessary container options!
-  - `HF_PRECACHE_DIR="./.cache/"` - Pre-load a model cache for faster first-time start
-  - `HF_TKN_FILE="./token"` - Add your Hugging Face Hub access token to download gated models
+- `--build-arg` オプション:
+  - `EXTRAS="whisper-timestamped"` - イメージのインストールにエクストラを追加します（スペースなし）。必要なコンテナオプションを設定することを忘れないでください！
+  - `HF_PRECACHE_DIR="./.cache/"` - 初回起動を高速化するためにモデルキャッシュをプリロードします
+  - `HF_TKN_FILE="./token"` - ゲート付きモデルをダウンロードするためにHugging Face Hubアクセストークンを追加します
 
-## 🔮 Use Cases
-Capture discussions in real-time for meeting transcription, help hearing-impaired users follow conversations through accessibility tools, transcribe podcasts or videos automatically for content creation, transcribe support calls with speaker identification for customer service...
+## 🔮 ユースケース
+会議の文字起こしのためにリアルタイムで議論をキャプチャする、聴覚障害のあるユーザーがアクセシビリティツールを通じて会話を追うのを助ける、コンテンツ作成のためにポッドキャストやビデオを自動的に文字起こしする、カスタマーサービスのために話者識別付きでサポートコールを文字起こしする...
